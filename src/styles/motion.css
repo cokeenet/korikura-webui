@@ -1,0 +1,369 @@
+/**
+ * 动效：卡片描边淡入、页面进入、主题涟漪、链接卡片、代码块。
+ */
+/* ── 卡片悬停：主色描边淡入（korikura 的招牌手法）───────
+ *
+ * 不是"抬起来"，而是**一圈 2px 主色描边淡入**：
+ * 用 ::before + inset:0 + border-radius:inherit 贴合任意圆角，
+ * 只过渡 opacity（合成层友好，不会触发重排）。
+ *
+ * 线上规则（korikura.css）：
+ *   border: 2px solid var(--primary); opacity: 0 → 1; transition: opacity .3s
+ * z-index:3 保证描边浮在内容之上；pointer-events:none 不挡点击。
+ */
+.card,
+.icon-btn,
+.link-card {
+  position: relative;
+}
+
+.card::before,
+.icon-btn::before,
+.link-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border: 2px solid var(--primary);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.card:hover::before,
+.icon-btn:hover::before,
+.link-card:hover::before {
+  opacity: 1;
+}
+
+/* ── 页面进入动画 ──────────────────────────────────────
+ *
+ * 线上定义了 page-in / page-out 与 fade-in-up；实际内容进入用的是
+ * 从下方 10px 淡入（配合视图过渡，切页时更顺）。
+ */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes page-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* 出场。上游 korikura-theme 是成对定义的（page-in / page-out），
+ * 这里原先只有入场 —— 结果是旧内容**瞬间消失**再淡入新内容，
+ * 观感是"闪一下"，而不是两侧连续过渡。 */
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* ── 整页视图过渡 ──────────────────────────────────────
+ *
+ * 导航有独立的 `view-transition-name: nav`（见 nav.css），切页时保持不动；
+ * 其余部分归 `root` 快照，这里给它配上入场 + 出场。
+ *
+ * 只在允许动效时启用：`prefers-reduced-motion: reduce` 下不加动画，
+ * 退化成浏览器默认的瞬时切换（前庭功能障碍用户会因位移动画不适）。
+ */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: page-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: page-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+/* ── 滚动揭示 ──────────────────────────────────────────
+ *
+ * 用法：给元素加 `reveal`，再用包的 `initReveal()` 注册。
+ * 默认**不可见**，进入视口后加 `in` 淡入 —— 所以 JS 没跑时
+ * 元素会一直看不见。为此 `initReveal` 在无 IntersectionObserver
+ * 的旧浏览器里会直接全部标 `in`（降级为可见）。
+ */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── 交错入场 ──────────────────────────────────────────
+ *
+ * 给容器加 `stagger`，直接子元素依次淡入（每个延迟 0.06s，最多 8 个）。
+ * 上游用 `nth-child` 手写 6 条 —— 这里保留同样的做法，
+ * 因为 `animation-delay` 无法用 CSS 变量循环累加。
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .stagger > * {
+    animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0.02s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.08s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.14s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.2s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.26s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.32s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.38s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.44s; }
+}
+
+/* 尊重"减少动态效果"偏好 —— 前庭功能障碍用户会因位移动画不适 */
+@media (prefers-reduced-motion: no-preference) {
+  main.container > * {
+    animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  /* 逐级延迟，形成"依次浮现"的层次感 */
+  main.container > *:nth-child(1) { animation-delay: 0.02s; }
+  main.container > *:nth-child(2) { animation-delay: 0.06s; }
+  main.container > *:nth-child(3) { animation-delay: 0.10s; }
+  main.container > *:nth-child(4) { animation-delay: 0.14s; }
+}
+
+/* ── 主题切换涟漪 ──────────────────────────────────────
+ *
+ * 从点击位置扩散一个主色圆，扩散的同时主题已切换，
+ * 视觉上像"新主题从指尖漫开"。
+ * 线上参数：scale(0) → scale(60)、opacity .42 → 0、900ms。
+ */
+.theme-ripple {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.42;
+  pointer-events: none;
+  z-index: 9999;
+  transform: scale(0);
+  animation: theme-ripple 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes theme-ripple {
+  to {
+    opacity: 0;
+    transform: scale(60);
+  }
+}
+
+/* 兼容不支持 startViewTransition 的浏览器的主题渐变过渡 */
+html.theme-transition,
+html.theme-transition * {
+  transition:
+    background-color 0.35s,
+    border-color 0.35s,
+    color 0.35s;
+}
+
+/* ── 链接卡片 ──────────────────────────────────────────
+ *
+ * 用于展示外链/文档入口（对应线上的 link-card / tool-card）。
+ */
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.25s;
+}
+
+.link-card:hover {
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+/* ── 代码块 ────────────────────────────────────────────
+ *
+ * 行内 code 已有 .mono；这里是块级代码（S 日志、命令示例）。
+ */
+.code-block {
+  position: relative;
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--bg) 60%, var(--card-bg));
+  overflow-x: auto;
+}
+
+.code-block pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.code-block .code-lang {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  background: color-mix(in oklab, var(--muted) 12%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+/* 主题切换时全站平滑过渡（线上用 html.theme-transition 统一切换） */
+
+/* ── 动态几何图案背景 ────────────────────────────────────
+ *
+ * 一层铺满视口的几何图案（○ △ X □），缓慢**斜向平移一个瓦片**后无缝循环。
+ *
+ * ## 为什么"看起来在动"而不是"在滚"
+ *
+ * `ps-bg-pan` 的终点正好是 `-1 × 瓦片尺寸` —— 图案本身是周期性瓦片，
+ * 平移整整一个周期后与原图**完全重合**，所以循环处看不到接缝。
+ * 用 `background-position` 而不是 `transform: translate`：
+ * 前者只重绘背景，后者会让整个图层参与合成。
+ *
+ * ## 用法
+ *
+ * ```ts
+ * initMotionBg();              // 默认参数
+ * initMotionBg({ speed: '60s', opacity: 0.12 });
+ * ```
+ *
+ * 或不用 JS，直接给任意元素加 `id="motion-bg"`（样式即生效）。
+ *
+ * 颜色刻意不跟 `--primary` 走：图案是**环境纹理**，跟主色走会在
+ * 换主色时把整个背景染色，失去"若有若无"的感觉。
+ * 需要染色时覆盖 `--motion-bg-stroke`（亮色底）与
+ * `--motion-bg-stroke-dark`（暗色底）即可。
+ */
+#motion-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  --motion-bg-tile: 160px;
+  --motion-bg-speed: 30s;
+  --motion-bg-opacity: 0.2;
+  --motion-bg-stroke: %23222222;
+  --motion-bg-stroke-dark: %23cfcfcf;
+}
+
+#motion-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: var(--motion-bg-opacity);
+  background-repeat: repeat;
+  background-size: var(--motion-bg-tile) var(--motion-bg-tile);
+  background-position: 0 0;
+  animation: motion-bg-pan var(--motion-bg-speed) linear infinite;
+  will-change: background-position;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23222222' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='40' cy='40' r='22'/%3E%3Cpath d='M120 20 L140 56 L100 56 Z'/%3E%3Cpath d='M28 112 L52 136 M52 112 L28 136'/%3E%3Crect x='100' y='104' width='36' height='36' rx='5' ry='5'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* 暗色底：描边转浅色并再降透明度 —— 亮色描边在深底上更"跳" */
+:root[data-theme='dark'] #motion-bg::before {
+  opacity: calc(var(--motion-bg-opacity) * 0.7);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23cfcfcf' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='40' cy='40' r='22'/%3E%3Cpath d='M120 20 L140 56 L100 56 Z'/%3E%3Cpath d='M28 112 L52 136 M52 112 L28 136'/%3E%3Crect x='100' y='104' width='36' height='36' rx='5' ry='5'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+@keyframes motion-bg-pan {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: calc(-1 * var(--motion-bg-tile)) calc(-1 * var(--motion-bg-tile));
+  }
+}
+
+/* 前庭功能障碍用户会因持续位移动画不适；静止的图案本身仍有装饰作用 */
+@media (prefers-reduced-motion: reduce) {
+  #motion-bg::before {
+    animation: none;
+    will-change: auto;
+  }
+}
+
+/* ── hero 图过渡（公网站点用）──────────────────────────
+ *
+ * 给 hero 容器加 `id="hero-slot"`（或用 `view-transition-name: hero`），
+ * 切页时它会**从下方 12px 淡入并轻微放大**，而不是跟着整页一起淡出。
+ * 观感是"标题图先落位、内容随后到位"。
+ *
+ * 后台站点没有 hero，这段永远不生效 —— 无副作用。
+ */
+#hero-slot {
+  view-transition-name: hero;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(hero) {
+    animation: hero-out 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  ::view-transition-new(hero) {
+    animation: hero-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(1.02);
+  }
+}
+
+@keyframes hero-out {
+  to {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+/* ── 装饰性波浪位移（公网站点用）───────────────────────
+ *
+ * 给任意带 `background-image` 的元素加 `.wave`，背景会**横向缓慢往复**。
+ * 只动 `background-position-x`，不触发重排。
+ */
+@keyframes wave-move {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: 12px;
+  }
+}
+.wave {
+  animation: wave-move 3s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave {
+    animation: none;
+  }
+}

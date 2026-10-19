@@ -1,0 +1,20 @@
+---
+/** 统计卡片：一个大数字 + 一行说明。 */
+interface Props {
+  value: string | number;
+  label: string;
+  /** 数值颜色：primary / ok / warn / danger */
+  tone?: 'primary' | 'ok' | 'warn' | 'danger' | 'muted';
+  hint?: string;
+}
+const { value, label, tone, hint } = Astro.props;
+const color = tone ? `var(--${tone})` : undefined;
+---
+
+<div class="card">
+  <div class="stat-value" style={color ? `color:${color}` : undefined}>{value}</div>
+  <div class="stat-label">
+    {label}
+    {hint && <span class="muted" style="display:block;font-size:0.72rem">{hint}</span>}
+  </div>
+</div>

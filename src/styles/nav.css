@@ -1,0 +1,234 @@
+/**
+ * 导航：滚动态浮动胶囊 + 毛玻璃 + 胶囊弹出动画。
+ *
+ * 三态由 .nav-wrapper[data-nav] 驱动（top/down/up），
+ * JS 见 src/lib/nav-scroll.ts。
+ */
+/* ── 导航（对齐 korikura 主题）─────────────────────────
+ *
+ * ## 从上游 korikura-theme 的 CSS 提取的行为
+ *
+ * 导航不是固定的一条横栏，而是**滚动态变化**的卡片：
+ *
+ *   data-nav="top"  贴顶、全宽、直角、透明背景
+ *   data-nav="down" 向下滚动 → 缩成**浮动胶囊**（圆角 + 边框 + 阴影）
+ *   data-nav="up"   向上滚动 → 同样保持胶囊，但链接重新显现
+ *
+ * 关键数值全部取自线上：
+ *   backdrop-filter: blur(10px) → 滚动后 blur(16px)
+ *   background: color-mix(in oklab, var(--bg) 82%, transparent)
+ *               滚动后 color-mix(... var(--card-bg) 82%, transparent)
+ *   胶囊态: max-width min(94vw, var(--container))、border-radius .75rem
+ *           box-shadow 0 8px 28px -18px color-mix(in oklab, var(--primary) 22%, transparent)
+ *   过渡: background-color .35s, border-color .35s, box-shadow .35s,
+ *         border-radius .35s, max-width .35s, padding .35s
+ */
+
+.nav-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  /* 跨页时导航**不参与**过渡：给它一个独立的 transition-name，
+     并关掉它自身的进出动画，这样切页只有内容在变。 */
+  view-transition-name: nav;
+}
+
+::view-transition-old(nav) {
+  animation: none;
+  display: none;
+}
+
+::view-transition-new(nav) {
+  animation: none;
+}
+
+::view-transition-group(nav) {
+  animation-duration: 0s;
+}
+
+.nav-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  height: var(--nav-total);
+  margin-inline: auto;
+  /* 刘海屏上顶部多出 --safe-top，用 padding 把内容推回安全区 */
+  padding-top: var(--safe-top);
+  padding-inline: calc(16px + var(--safe-left)) calc(16px + var(--safe-right));
+  background-color: var(--bg);
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  /* 注意属性顺序与写法：Lightning CSS（Tailwind v4 内置）会认为
+     `backdrop-filter` 被 `-webkit-backdrop-filter` 覆盖而**删掉标准属性**，
+     导致 Chrome 下模糊失效。实测 dist 里只剩 -webkit 版。
+     解法：标准属性单独放进 @supports，避免被判定为重复声明。 */
+  -webkit-backdrop-filter: blur(10px);
+  transition:
+    background-color 0.35s,
+    border-color 0.35s,
+    box-shadow 0.35s,
+    border-radius 0.35s,
+    max-width 0.35s,
+    padding 0.35s,
+    height 0.35s;
+}
+
+@supports (color: color-mix(in lab, red, red)) {
+  .nav-card {
+    background-color: color-mix(in oklab, var(--bg) 82%, transparent);
+  }
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  .nav-card {
+    backdrop-filter: blur(10px);
+  }
+  .nav-wrapper[data-nav='down'] .nav-card,
+  .nav-wrapper[data-nav='up'] .nav-card {
+    backdrop-filter: blur(16px);
+  }
+}
+
+/* 滚动后：缩成浮动胶囊 */
+.nav-wrapper[data-nav='down'] .nav-card,
+.nav-wrapper[data-nav='up'] .nav-card {
+  /* 与正文容器完全对齐。
+     线上 korikura 用 94vw（它没有"正文容器"这个概念，导航是独立一层）；
+     我们这里导航与正文必须左右对齐，否则会有 3px 错位（94vw=1353.6 vs 1360）。
+     所以去掉 94vw，直接用 --container。 */
+  max-width: var(--container);
+  margin-top: 6px;
+  height: calc(var(--nav-h) - 8px + var(--safe-top));
+  padding-inline: 20px;
+  border-radius: var(--radius-md);
+  border-color: color-mix(in oklab, var(--border) 70%, transparent);
+  background-color: var(--card-bg);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 28px -18px color-mix(in oklab, var(--primary) 22%, transparent);
+}
+
+@supports (color: color-mix(in lab, red, red)) {
+  .nav-wrapper[data-nav='down'] .nav-card,
+  .nav-wrapper[data-nav='up'] .nav-card {
+    background-color: color-mix(in oklab, var(--card-bg) 82%, transparent);
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+.logo-img {
+  width: 26px;
+  height: 26px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav-links::-webkit-scrollbar {
+  display: none;
+}
+
+/* 导航项：胶囊从中心"弹"出来（korikura 的手法）。
+ *
+ * 用 ::before 做背景而不是直接改 background —— 这样能对
+ * transform 做动画（background 无法平滑缩放），
+ * 且缓动曲线带一点回弹：cubic-bezier(.34,1.56,.64,1)。
+ * 文字放在 .nav-link-text 里并抬到 z-index:10，否则会被盖住。
+ */
+.nav-link {
+  position: relative;
+  padding: 7px 11px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+  transform: scale(0);
+  transform-origin: 50%;
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s;
+  z-index: 0;
+}
+
+.nav-link-text {
+  position: relative;
+  z-index: 10;
+}
+
+.nav-link:hover {
+  color: var(--primary);
+}
+
+.nav-link:hover::before {
+  transform: scale(1);
+}
+
+.nav-link[aria-current='page'] {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.nav-link[aria-current='page']::before {
+  transform: scale(1);
+  background-color: color-mix(in oklab, var(--primary) 15%, transparent);
+}
+
+/* 按下时轻微回缩，给出触感反馈 */
+.nav-link:active {
+  scale: 0.95;
+}
+
+.nav-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.icon-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}

@@ -1,0 +1,48 @@
+---
+/**
+ * 页脚。文案与外链由 props 传入 —— 各项目的致谢对象不同。
+ */
+interface Credit {
+  /** 前缀文案，如「协议核心基于」 */
+  prefix?: string;
+  name: string;
+  href: string;
+}
+
+interface Props {
+  /** 版权行左侧文案，如「我的站点」 */
+  siteName: string;
+  /** 致谢条目（可多条） */
+  credits?: Credit[];
+  /** 未登录时是否隐藏（登录页不需要页脚） */
+  hidden?: boolean;
+}
+
+const { siteName, credits = [], hidden = false } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+{
+  !hidden && (
+    <footer class="footer">
+      <div>
+        {siteName} · © {year}
+      </div>
+      {credits.length > 0 && (
+        <div class="footer-meta">
+          {credits.map((c, i) => (
+            <>
+              {i > 0 && ' · '}
+              {c.prefix}
+              <a href={c.href} target="_blank" rel="noopener noreferrer" style="color:var(--primary)">
+                {c.name}
+              </a>
+            </>
+          ))}
+        </div>
+      )}
+      {/* 项目特有的页脚内容（版本号、备案号等）。不传则不渲染。 */}
+      <slot />
+    </footer>
+  )
+}

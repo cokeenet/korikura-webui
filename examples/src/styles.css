@@ -1,0 +1,2 @@
+/* 包的样式入口。项目特有样式写在它**后面**，便于覆盖。 */
+@import 'korikura-webui/styles.css';

@@ -1,0 +1,35 @@
+---
+/**
+ * 空状态（SSR 版）：一句说明 + 可选引导。
+ *
+ * ⚠️ **与 `EmptyState.tsx` 是同一套标记与类名**，改一个必须改另一个。
+ * React 岛屿无法引用 .astro 组件，所以必须存在两份 —— 但两份的
+ * DOM 结构、class 名、文案默认值都要一致，否则同一个站点里
+ * SSR 页和岛屿会显示成两种样子。
+ * `scripts/check-ui-parity.mjs` 做静态检查，防止静默漂移。
+ *
+ * 参数别名：**两套名字都收**（`title`/`desc` 与 `text`/`hint`）——
+ * 只认一套的话，传另一套名字的文案会被静默忽略、显示成「暂无数据」，
+ * 看起来像没数据。
+ */
+interface Props {
+  text?: string;
+  hint?: string;
+  /** `text` 的别名 */
+  title?: string;
+  /** `hint` 的别名 */
+  desc?: string;
+  href?: string;
+  action?: string;
+}
+const { text, hint, title, desc, href, action } = Astro.props;
+const msg = text ?? title ?? '暂无数据';
+const sub = hint ?? desc;
+---
+
+<div class="empty-state">
+  <p class="empty-title">{msg}</p>
+  {sub && <p class="empty-desc">{sub}</p>}
+  {href && action && <a class="btn btn-sm" href={href}>{action}</a>}
+  <slot />
+</div>

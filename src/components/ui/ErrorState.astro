@@ -1,0 +1,41 @@
+---
+/**
+ * 错误状态（SSR 版）：取数失败时用。
+ *
+ * ⚠️ **与 `ErrorState.tsx` 是同一套标记与类名**，改一个必须改另一个。
+ *
+ * 文案默认带一句「这不代表没有数据，只是这次没取到」——
+ * 这是实际踩出来的：接口失败和"确实没数据"在界面上长得一样，
+ * 用户会以为是后者。`explain={false}` 可关掉（自己已经写了说明时）。
+ */
+interface Props {
+  text?: string;
+  /** `text` 的别名 */
+  reason?: string;
+  /** 标题。默认「数据加载失败」 */
+  title?: string;
+  /** 重试入口（整页刷新） */
+  retryHref?: string;
+  /** 是否追加「不代表没有数据」的说明。默认 true */
+  explain?: boolean;
+}
+const {
+  text,
+  reason,
+  title = '数据加载失败',
+  retryHref,
+  explain = true,
+} = Astro.props;
+const msg = text ?? reason ?? '';
+---
+
+<div class="empty-state is-error">
+  <p class="empty-title">{title}</p>
+  {msg && (
+    <p class="empty-desc">
+      {msg}{explain ? '。这不代表没有数据，只是这次没取到。' : ''}
+    </p>
+  )}
+  {retryHref && <a class="btn btn-sm" href={retryHref}>重新加载</a>}
+  <slot />
+</div>

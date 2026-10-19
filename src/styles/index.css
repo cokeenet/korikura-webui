@@ -1,0 +1,33 @@
+/**
+ * korikura-webui —— 样式总入口。
+ *
+ * ## 用法
+ *
+ * ```css
+ * // 你的 src/styles/app.css
+ * @import 'korikura-webui/styles.css';
+ * @import './your-own.css';   // 项目特有样式放**后面**，便于覆盖
+ * ```
+ *
+ * ## ⚠️ 必须保留下面的 @source
+ *
+ * Tailwind v4 默认**只扫描项目自身目录**，不会扫 node_modules。
+ * 包里组件用到的工具类（grid / flex / gap-* 等）若不被扫到，
+ * 样式会凭空消失 —— 症状是"HTML 里有类名但没效果"，极难定位。
+ *
+ * @source 让 Tailwind 额外扫描本包目录。
+ */
+
+@import 'tailwindcss';
+
+/* 让 Tailwind 扫到本包内的组件（见上方说明，删掉会导致样式丢失） */
+@source '../components';
+
+@import './theme.css';
+@import './base.css';
+@import './nav.css';
+@import './components.css';
+@import './cursor.css';
+@import './login.css';
+@import './motion.css';
+@import './overlay.css';

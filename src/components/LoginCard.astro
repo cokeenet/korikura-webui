@@ -1,0 +1,119 @@
+---
+/**
+ * 登录卡片：一个不带业务逻辑的登录表单外壳。
+ *
+ * ## 为什么要有它
+ *
+ * 同一个登录页在不同项目里各写一份，很快就漂了：最小高度出现两种、
+ * 错误条被 `display: block` 压掉 `hidden`（空的红框一直显示）、
+ * 有的甚至绕开 `Base` 自拼裸页面。现在统一成「`Base` + `LoginCard`」，
+ * 各项目只传自己的差异。
+ *
+ * ## 参数就是差异清单
+ *
+ * - `endpoint`：登录接口，默认 `/api/auth/login`
+ * - `redirectParam`：从哪个查询参数取登录后的跳转地址；
+ *   传 `false` 表示固定回 `fallback`（不跟随来源页）
+ * - 其余都是文案
+ *
+ * 成功判定与错误文案不在这里配 —— 后端返回什么就认什么，
+ * 三种常见约定（`{ ok: true }` / `{ code: 0 }` / 只看 HTTP 状态）
+ * 由 `initLogin()` 统一兼容，见 lib/ui.ts。
+ *
+ * ## 插槽
+ *
+ * - `header`：标题上方的品牌块
+ * - `notice`：表单上方的页面级提示（如「后端不可达」）
+ * - 默认：表单下方的补充说明
+ */
+interface Props {
+  /** 产品名，如「示例后台」 */
+  title: string;
+  /** 一句话说明，显示在标题下方 */
+  subtitle?: string;
+  /** 登录接口，默认 `/api/auth/login` */
+  endpoint?: string;
+  /** 跳转参数名；`false` 表示固定回 `fallback` */
+  redirectParam?: string | false;
+  /** 登录成功后的默认去处 */
+  fallback?: string;
+  usernameLabel?: string;
+  passwordLabel?: string;
+  submitText?: string;
+  submittingText?: string;
+}
+
+const {
+  title,
+  subtitle,
+  endpoint = '/api/auth/login',
+  redirectParam = 'redirect',
+  fallback = '/',
+  usernameLabel = '用户名',
+  passwordLabel = '密码',
+  submitText = '登录',
+  submittingText = '登录中…',
+} = Astro.props;
+
+// 传给客户端的行为参数（模块脚本读它，避免前后端各写一份）
+const options = { endpoint, redirectParam, fallback, submittingText };
+---
+
+<div class="login-wrap">
+  <div class="card login-card">
+    <slot name="header" />
+
+    <h1 class="login-title">{title}</h1>
+    {subtitle && <p class="muted small login-sub">{subtitle}</p>}
+
+    <slot name="notice" />
+
+    <form id="login-form" autocomplete="on">
+      <div class="field">
+        <label for="login-username">{usernameLabel}</label>
+        <input
+          id="login-username"
+          name="username"
+          class="input"
+          autocomplete="username"
+          required
+          autofocus
+        />
+      </div>
+      <div class="field">
+        <label for="login-password">{passwordLabel}</label>
+        <input
+          id="login-password"
+          name="password"
+          type="password"
+          class="input"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      {/* 错误显示在**表单内**（操作现场），不是页面顶部 */}
+      <div id="login-err" class="msg-bar msg-err login-err" hidden></div>
+      <button id="login-submit" class="btn btn-primary login-btn" type="submit">
+        {submitText}
+      </button>
+    </form>
+
+    <slot />
+  </div>
+</div>
+
+<script type="application/json" id="login-options" set:html={JSON.stringify(options)} />
+
+<script>
+  import { initLogin } from '../lib/ui';
+
+  // 行为参数只取一次：同一份登录页的 options 不会变。
+  // 表单本身在每次换页后是新元素，由 initLogin() 内部的 onPageReady 重绑。
+  const raw = document.getElementById('login-options')?.textContent || '{}';
+  try {
+    initLogin(JSON.parse(raw));
+  } catch {
+    initLogin({});
+  }
+</script>

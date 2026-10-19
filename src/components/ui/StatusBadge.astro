@@ -1,0 +1,11 @@
+---
+/** 状态徽标。tone 决定配色。 */
+interface Props {
+  text: string;
+  tone?: 'ok' | 'fail' | 'warn' | 'run' | 'muted';
+  title?: string;
+}
+const { text, tone = 'muted', title } = Astro.props;
+---
+
+<span class={`badge badge-${tone}`} title={title}>{text}</span>

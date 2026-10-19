@@ -1,0 +1,80 @@
+/**
+ * 登录页（配合 `components/LoginCard.astro`）。
+ *
+ * ## 为什么收进包里
+ *
+ * 同一个登录页在不同项目里各写一份 `.login-*`，数值很快就漂了：
+ * 最小高度出现两种，错误条还被 `.login-err { display: block }`
+ * 压掉了 `hidden` —— 空的红条一直挂着。
+ * 收进包里之后这些只有一份定义。
+ */
+
+/* ── 布局 ───────────────────────────────────────────────
+ * 减掉导航与页脚的占位，避免矮屏上撑出滚动条。 */
+.login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--nav-h) - 140px);
+}
+
+.login-card {
+  width: min(380px, 92vw);
+  padding: 28px 26px;
+}
+
+.login-title {
+  font-size: 21px;
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+
+.login-sub {
+  margin: 0 0 20px;
+}
+
+/* 两个字段贴在一起很难看。只在登录卡片内部补间距，
+ * **不动全局 `.field`** —— 那是跨项目的视觉变更，要单独确认。 */
+.login-card .field + .field {
+  margin-top: 14px;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 18px;
+}
+
+/* ⚠️ 只定位文本对齐，**不要**写 `display: block`：
+ *   作者样式的 display 会压掉 `hidden` 属性，空错误条会一直显示
+ *   （两个接入项目都这样中过）。`.msg-bar` 本身是块级，不需要再写。 */
+.login-err {
+  text-align: left;
+}
+
+/* ── 消息条 ─────────────────────────────────────────────
+ * 放在操作现场（表单内），不要只丢到页面顶部。 */
+.msg-bar {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  font-size: 0.87rem;
+  margin-bottom: 12px;
+}
+
+.msg-ok {
+  border-color: color-mix(in oklab, var(--ok) 50%, var(--border));
+  background: color-mix(in oklab, var(--ok) 12%, var(--card-bg));
+  color: var(--ok);
+}
+
+.msg-warn {
+  border-color: color-mix(in oklab, var(--warn) 50%, var(--border));
+  background: color-mix(in oklab, var(--warn) 12%, var(--card-bg));
+  color: var(--warn);
+}
+
+.msg-err {
+  border-color: color-mix(in oklab, var(--danger) 50%, var(--border));
+  background: color-mix(in oklab, var(--danger) 12%, var(--card-bg));
+  color: var(--danger);
+}

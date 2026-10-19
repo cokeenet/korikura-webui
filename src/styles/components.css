@@ -1,0 +1,720 @@
+/**
+ * 通用组件：卡片 / 统计块 / 按钮 / 表格 / 徽标 / 日志面板 / 表单 / 页脚。
+ */
+/* ── 卡片 ───────────────────────────────────────────── */
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+  transition: border-color 0.35s, background-color 0.35s;
+}
+
+.card-title {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* ── 统计块 ─────────────────────────────────────────── */
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* ── 空状态 / 错误状态 ─────────────────────────────── */
+/*
+ * 这两个原语是**双份实现**（.astro 给 SSR、.tsx 给 React 岛屿）——
+ * 标记结构与类名必须完全一致，改一个必须改另一个。
+ * `scripts/check-ui-parity.mjs` 会做静态检查，防止静默漂移。
+ *
+ * 早期 .astro 版用的是内联样式、.tsx 版用类名，两边已经漂移过一次
+ * （接入方复制 .tsx 时顺手改了样式，包这边毫无察觉）。统一走类名。
+ */
+.empty-state {
+  padding: 28px 20px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklch, var(--muted) 4%, transparent);
+}
+.empty-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.empty-desc {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+/* 错误态：实线红框，标题转 danger —— 与空状态一眼能区分 */
+.empty-state.is-error {
+  border-style: solid;
+  border-color: color-mix(in oklch, var(--danger) 38%, var(--border));
+  background: color-mix(in oklch, var(--danger) 7%, transparent);
+}
+.empty-state.is-error .empty-title {
+  color: var(--danger);
+}
+/* 状态块里的按钮不要贴着文字 */
+.empty-state .btn {
+  margin-top: 16px;
+}
+
+/* ── 按钮 ───────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, color 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: oklch(1 0 0);
+  font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: oklch(1 0 0);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.83rem;
+}
+
+/* ── 表格 ───────────────────────────────────────────── */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 9px 10px;
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.table tbody tr:hover {
+  background: color-mix(in oklab, var(--primary) 6%, transparent);
+}
+
+/* ── 徽标 ───────────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.badge-ok {
+  color: var(--ok);
+  background: color-mix(in oklab, var(--ok) 14%, transparent);
+  border-color: color-mix(in oklab, var(--ok) 35%, transparent);
+}
+
+.badge-fail {
+  color: var(--danger);
+  background: color-mix(in oklab, var(--danger) 14%, transparent);
+  border-color: color-mix(in oklab, var(--danger) 35%, transparent);
+}
+
+.badge-warn {
+  color: var(--warn);
+  background: color-mix(in oklab, var(--warn) 16%, transparent);
+  border-color: color-mix(in oklab, var(--warn) 35%, transparent);
+}
+
+.badge-run {
+  color: var(--warn);
+  background: color-mix(in oklab, var(--warn) 16%, transparent);
+  border-color: color-mix(in oklab, var(--warn) 35%, transparent);
+}
+
+.badge-muted {
+  color: var(--muted);
+  background: color-mix(in oklab, var(--muted) 12%, transparent);
+}
+
+/* ── 日志面板（控制台核心）───────────────────────────── */
+
+.log-panel {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  background: oklch(0.16 0 0);
+  color: oklch(0.9 0 0);
+  border: 1px solid oklch(0.3 0 0);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  min-height: 340px;
+  /* 在填充式布局里占满剩余高度，避免卡片下方大片留白 */
+  flex: 1 1 auto;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 让日志卡片撑满整列，与左栏等高 */
+.card-fill {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 控制台两栏：左右各自独立滚动，整体等高 */
+.console-grid {
+  display: grid;
+  gap: 16px;
+  align-items: stretch;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
+
+@media (min-width: 1100px) {
+  .console-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  }
+}
+
+.log-line {
+  display: flex;
+  gap: 8px;
+}
+
+.log-time {
+  color: oklch(0.6 0 0);
+  flex-shrink: 0;
+}
+
+.log-line.is-err {
+  color: oklch(0.75 0.16 25);
+}
+
+.log-line.is-ok {
+  color: oklch(0.8 0.14 150);
+}
+
+/* ── 表单 ───────────────────────────────────────────── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field label {
+  font-size: 0.83rem;
+  color: var(--muted);
+}
+
+.input {
+  padding: 8px 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 20%, transparent);
+}
+
+/* ── 页脚 ───────────────────────────────────────────── */
+
+.footer {
+  margin-top: 48px;
+  padding: 26px 0 34px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.page-desc {
+  color: var(--muted);
+  margin: 0 0 22px;
+  font-size: 0.92rem;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mt-24 {
+  margin-top: 24px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+/* ══════════════════════════════════════════════════════════
+   移动端适配（M16）
+   ──────────────────────────────────────────────────────────
+   全部规则都写在 `@media (max-width: 640px)` 里 —— **桌面端零影响**。
+   （唯一例外是 `.nav-burger` / `.nav-drawer` 的 display:none 默认值，
+     它们本来就是为了在桌面隐藏。）
+
+   实测依据（390×844 视口，改造前）：
+     · 导航 9 项总宽 616px，可视区仅 110px → 只能看到 1 项
+     · 账号页表格 10 列被压到最窄 33px/格，行高 452px，整页 6750px
+     · 调度/记录/用户页横向溢出 83~172px（内容被切掉且无法滚动）
+   ══════════════════════════════════════════════════════════ */
+
+/* 桌面端：汉堡与抽屉都不出现 */
+.nav-burger,
+.nav-drawer {
+  display: none;
+}
+
+/* 表格横滚容器：把溢出关进这里，而不是让 table 撑破 .card。
+   早前试过只给 table 加 width:max-content，结果调度页溢出从 83px
+   恶化到 317px —— 必须同时提供可滚动的父容器。 */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  /* ── 导航 ─────────────────────────────────────────── */
+
+  /* 汉堡按钮：只在手机上出现 */
+  .nav-burger {
+    display: grid;
+    flex: 0 0 auto;
+  }
+
+  /* 手机上隐藏横向链接条（改由抽屉承载），并让 logo 不再抢宽度 */
+  .nav-links {
+    display: none;
+  }
+
+  .nav-card {
+    gap: 8px;
+    min-width: 0;
+    padding-inline: 10px;
+  }
+
+  /* logo 只留图标：文字占 148px，是"看不到菜单项"的主因 */
+  .logo-text {
+    display: none;
+  }
+
+  .nav-actions {
+    gap: 6px;
+  }
+
+  /* ── 抽屉菜单 ─────────────────────────────────────── */
+
+  /* 抽屉本体不占位：真正的面板由 .nav-drawer-panel 绝对定位 */
+  .nav-drawer {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    z-index: 60;
+  }
+
+  /* 面板从导航栏正下方展开，不盖住页面标题 */
+  .nav-drawer-panel {
+    top: calc(var(--nav-total) + 6px);
+  }
+
+  .nav-drawer-handle {
+    list-style: none;
+    cursor: pointer;
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    font-size: 0.85rem;
+    user-select: none;
+    /* 汉堡按钮就是抽屉开关（见 Navbar 脚本）。
+       这里把 summary 收成 0 尺寸，避免出现第二个入口。 */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    border: 0;
+  }
+
+  .nav-drawer-handle::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-drawer[open] .nav-drawer-handle {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* 面板：一行两个，9 项两屏内看完，且每项都是 44px 触控高度 */
+  .nav-drawer-panel {
+    position: fixed;
+    left: 3vw;
+    min-width: 232px;
+    max-width: 94vw;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 10px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    box-shadow: 0 12px 32px oklch(0 0 0 / 0.18);
+  }
+
+  .nav-drawer-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    color: var(--text);
+    background: color-mix(in oklab, var(--primary) 7%, transparent);
+  }
+
+  .nav-drawer-link[aria-current='page'] {
+    color: var(--primary);
+    background: color-mix(in oklab, var(--primary) 18%, transparent);
+    font-weight: 600;
+  }
+
+  /* ── 布局与间距 ───────────────────────────────────── */
+
+  :root {
+    --container: 94vw;
+  }
+
+  .card {
+    padding: 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .grid {
+    gap: 12px;
+  }
+
+  /* 概览页统计卡：手机上 2×2，别一张占满一屏 */
+  .grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stat-value {
+    font-size: 1.4rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .page-desc {
+    font-size: 0.85rem;
+  }
+
+  /* ── 表格：按内容撑开 + 外层横滚 ──────────────────── */
+
+  /* 关键：`overflow-x:auto` 本身**不会**限制宽度 —— 没有显式约束时，
+     它仍会被内容撑大（实测 .table-wrap 在 390px 视口里变成 941px，
+     把整页顶出 595px 溢出）。必须先给它 `width:100%` + `max-width:100%`
+     + `min-width:0`，把宽度钉死在容器上，横滚才会真正生效。 */
+  .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .table-wrap > .table {
+    width: max-content;
+    min-width: 100%;
+  }
+
+  /* 卡片本身也要允许子元素收缩，否则包裹层仍然撑破布局 */
+  .card {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .table th,
+  .table td {
+    white-space: nowrap;
+  }
+
+  /* 操作列里那排按钮不要换行 —— 换行会把行高从 65px 撑到 452px */
+  .table td .row {
+    flex-wrap: nowrap;
+  }
+
+  /* ── 触控目标 ≥44px（Apple/Google 的触控建议值）─── */
+
+  .btn,
+  .icon-btn.btn-sm,
+  button.btn-sm {
+    min-height: 44px;
+  }
+
+  /* 表格内的行内小按钮：44px 会让表格过高，折中到 38px */
+  .table .btn {
+    min-height: 38px;
+    padding: 6px 10px;
+  }
+
+  .input,
+  select.input {
+    min-height: 44px;
+    font-size: 16px; /* <16px 时 iOS 会在聚焦时自动放大页面 */
+  }
+
+  /* 日志面板在手机上给个舒服的高度 */
+  .log-panel {
+    max-height: 46vh;
+  }
+
+  /* 代码块/长串（手机号、坐标）允许折行，避免撑宽页面 */
+  .mono {
+    word-break: break-all;
+  }
+}
+
+/* 顶部导航的行内提示条（替代 alert()）。
+   桌面/手机通用：固定顶部居中，4 秒后淡出。 */
+.nav-toast {
+  position: fixed;
+  top: calc(var(--nav-total) + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  z-index: 80;
+  max-width: 92vw;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--danger, oklch(0.6 0.2 25));
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.88rem;
+  box-shadow: 0 10px 28px oklch(0 0 0 / 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.nav-toast.is-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── 回到顶部 ──────────────────────────────────────── */
+/*
+ * 按钮由 `lib/ui.ts` 的 `initBackToTop()` 注入，接入方不必写标记。
+ *
+ * ⚠️ 标准 `backdrop-filter` 必须单独放 `@supports` 里 ——
+ * 否则 Tailwind v4 的 Lightning CSS 会认为它被 `-webkit-` 版本覆盖而
+ * **直接删掉**（见 README「坑 2」）。
+ */
+.back-to-top {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  background: color-mix(in oklch, var(--card-bg) 86%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.25s, transform 0.25s, border-color 0.2s, color 0.2s;
+  -webkit-backdrop-filter: blur(10px);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .back-to-top {
+    backdrop-filter: blur(10px);
+  }
+}
+.back-to-top.is-show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+.back-to-top:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top {
+    transition: opacity 0.01s;
+    transform: none;
+  }
+}
+
+/* ── 进度条 ────────────────────────────────────────── */
+/*
+ * 与 `ui/ProgressBar.astro` / `ui/ProgressBar.tsx` 配套（孪生组件）。
+ *
+ * 色彩走 `--primary`，完成时转 `--ok` —— 不用红色系：进度条的语义是
+ * "还差多少"，不是"出错了"。
+ */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 190px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 7px;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--muted) 22%, transparent);
+  border-radius: 999px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.progress-fill.is-done {
+  background: var(--ok);
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 窄屏下让它跟着容器收缩，别撑出横向滚动条 */
+@media (max-width: 720px) {
+  .progress {
+    min-width: 0;
+  }
+}
+
+/* 窄屏容器：再多留一点边距，同时扣掉刘海安全区 ——
+ * 不扣的话横屏/刘海屏上正文会顶到圆角外。 */
+@media (max-width: 720px) {
+  :root {
+    --container: min(94vw, calc(100vw - var(--safe-left) - var(--safe-right)));
+  }
+}

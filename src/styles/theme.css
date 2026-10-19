@@ -1,0 +1,371 @@
+/**
+ * 主题变量与重置。
+ *
+ * 数值全部取自 korikura-theme。
+ * 改 --hue 即可整体换色（350 = 粉）。
+ */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-bg: var(--bg);
+  --color-card-bg: var(--card-bg);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --font-sans: 'LemiHuiYuanTi', system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+}
+
+/**
+ * 字体：LemiHuiYuanTi（参考主题自带）。
+ *
+ * ⚠️ 字体文件**不在本包里**（二进制、体积大、且各项目可能想换）。
+ * 需要用它的项目把自己的字体放到 `public/fonts/` 下，
+ * 路径与下面一致即可自动生效；不想用也没关系 ——
+ * --font-sans 已经带了一串系统字体兜底，只是观感略有差别。
+ *
+ * 构建时若看到 "/fonts/LemiHuiYuanTi-Regular.woff2 didn't resolve" 警告，
+ * 说明你的项目没放这个文件，属于预期行为，不影响运行。
+ */
+/* ═══ 字体分片：由 font-slicer 脚本生成，勿手改 ═══
+ *
+ * 原来是单个 1MB 的 @font-face；改成 unicode-range 分片后，浏览器只下载
+ * 当前页面实际渲染到的片（登录页通常只取基础片 154KB，而非整个 1MB）。
+ * 所有分片共用同一个 font-family，浏览器按 unicode-range 自动拼装。
+ *
+ * 分片文件由各项目的 public/fonts/ 提供（/fonts/lemi-*.woff2）。
+ * 缺文件时回退到 --font-sans 的系统字体栈，不影响功能。
+ */
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-base.woff2) format('woff2');
+  unicode-range: U+20-5F, U+61-7E, U+B7, U+D7, U+F7, U+2014, U+2026, U+3001-3002, U+3008-300D, U+3010-3011,
+         U+4E00-4E01, U+4E03, U+4E09-4E0B, U+4E0D-4E0E, U+4E13-4E14, U+4E16, U+4E1A, U+4E1C, U+4E22,
+         U+4E24-4E25, U+4E2A, U+4E2D, U+4E32, U+4E34, U+4E3A-4E3B, U+4E3E, U+4E45, U+4E48-4E49, U+4E4B,
+         U+4E4E, U+4E50, U+4E5D, U+4E5F-4E60, U+4E66, U+4E86, U+4E8B-4E8C, U+4E8E, U+4E92, U+4E94-4E95,
+         U+4E9B, U+4EA4, U+4EA7, U+4EAB-4EAC, U+4EBA, U+4EC0, U+4EC5, U+4ECA-4ECB, U+4ECD-4ECE, U+4ED3,
+         U+4ED6, U+4ED8, U+4EE3-4EE5, U+4EEC, U+4EF0, U+4EF6-4EF7, U+4EFB, U+4EFD, U+4F18, U+4F1A, U+4F20,
+         U+4F2A, U+4F46, U+4F4D-4F4F, U+4F53, U+4F55, U+4F59, U+4F5C, U+4F60, U+4F7F, U+4F8B, U+4F9B,
+         U+4F9D, U+4FA7, U+4FBF, U+4FDD, U+4FE1, U+4FEE-4FEF, U+5012, U+5019, U+503C, U+5047, U+504F,
+         U+505A, U+505C, U+5065, U+50CF, U+5141, U+5143, U+5145, U+5148, U+514D, U+515C, U+5165, U+5168,
+         U+516C-516D, U+5171, U+5173, U+5176-5178, U+517C, U+5185, U+518C-518D, U+5197, U+5199,
+         U+51B2-51B3, U+51B5, U+51B7, U+51C0, U+51C6, U+51CF, U+51D1, U+51E0, U+51ED, U+51FA-51FB, U+51FD,
+         U+5206-5207, U+5217, U+5219-521B, U+521D, U+5220, U+5224, U+522B, U+5230, U+5236-5237, U+523B,
+         U+524D, U+5269-526A, U+526F, U+5272, U+529B, U+529E-52A1, U+52A8-52A9, U+52BF, U+52E4, U+52FE,
+         U+5305, U+5316-5317, U+5339-533A, U+5341, U+5347, U+534A, U+534F, U+5355, U+535A, U+5360-5361,
+         U+5367, U+536B, U+5370, U+5373-5374, U+5377, U+5386, U+538B, U+539F, U+53BB, U+53C2, U+53C8,
+         U+53CA-53CD, U+53D1, U+53D6-53D8, U+53E0, U+53E3, U+53E5-53E6, U+53EA, U+53EF-53F0, U+53F2-53F3,
+         U+53F7, U+5403-5404, U+5408, U+540A, U+540C-540E, U+5410-5411, U+5413, U+5426, U+542B-542C,
+         U+542F, U+544A, U+5458, U+5468, U+547D, U+548C, U+54C1, U+54C8, U+54CD, U+54EA, U+552F, U+5546,
+         U+5668, U+56DB, U+56DE, U+56E0, U+56ED, U+56F0, U+56F4, U+56FA, U+56FE, U+5728, U+5730, U+573A,
+         U+5740, U+574F-5751, U+5757, U+5782, U+578B, U+57DF, U+57FA, U+5806, U+5821, U+585E, U+586B,
+         U+5883, U+589E, U+58F0, U+58F3, U+5904, U+5907, U+590D, U+5916, U+591A, U+591F, U+5927,
+         U+5929-592A, U+5931, U+5934, U+5951, U+5957, U+597D, U+5982, U+59B9, U+59CA-59CB, U+5A01, U+5A92,
+         U+5B50, U+5B57-5B58, U+5B66, U+5B6A, U+5B81, U+5B83, U+5B88-5B89, U+5B8C, U+5B98, U+5B9A,
+         U+5B9D-5B9E, U+5BA1-5BA2, U+5BB6, U+5BB9, U+5BBD, U+5BC6, U+5BD3, U+5BF8-5BF9, U+5BFC, U+5C01,
+         U+5C04, U+5C06, U+5C0F, U+5C11, U+5C1A, U+5C1D, U+5C24, U+5C31, U+5C3A, U+5C3D-5C3E, U+5C40,
+         U+5C42, U+5C45, U+5C48-5C4A, U+5C4F, U+5C51, U+5C55, U+5C5E, U+5C7F, U+5C9B, U+5D29, U+5DDD,
+         U+5DE5-5DE6, U+5DEE, U+5DF1-5DF2, U+5E03, U+5E08, U+5E0C, U+5E26, U+5E38, U+5E42, U+5E45, U+5E55,
+         U+5E72-5E74, U+5E76, U+5E7F, U+5E8F, U+5E93-5E95, U+5E9F, U+5EA6, U+5EB7, U+5EF6, U+5EFA, U+5F00,
+         U+5F02-5F04, U+5F0F, U+5F15, U+5F20, U+5F39-5F3A, U+5F52-5F53, U+5F55, U+5F62, U+5F71, U+5F7B,
+         U+5F80, U+5F84-5F85, U+5F88, U+5F8B, U+5F97, U+5FAA, U+5FAE, U+5FBD, U+5FC3, U+5FC5, U+5FCD,
+         U+5FD7-5FD8, U+5FEB, U+5FF5, U+5FFD, U+6001, U+600E, U+6025, U+6027, U+603B, U+6052, U+6062,
+         U+606F-6070, U+6084, U+60C5, U+60D1, U+60F3, U+610F, U+611F, U+6162, U+6167, U+61C2, U+6210-6211,
+         U+6216, U+622A, U+6233, U+6237, U+6240-6241, U+624B, U+624D, U+6253, U+6267, U+626B, U+6270,
+         U+6279, U+627E-627F, U+6284, U+628A, U+6295, U+6298, U+629B, U+62A2, U+62A4-62A5, U+62AC, U+62B9,
+         U+62BD, U+62C6, U+62C9, U+62CD, U+62D2, U+62D6, U+62E2, U+62E6, U+62E9, U+62FC, U+62FF,
+         U+6301-6302, U+6307, U+6309, U+6311, U+6321, U+6324-6325, U+632A, U+6362, U+636E, U+6389, U+6390,
+         U+6392, U+63A2, U+63A5, U+63A7-63A9, U+63CF-63D0, U+63D2, U+641C, U+642C, U+643A, U+6446, U+6458,
+         U+6491, U+649E, U+64A4, U+64AD, U+64CD, U+652F, U+6536, U+6539, U+653B, U+653E-653F, U+6545,
+         U+6548, U+654F, U+6559, U+655B, U+6563, U+6570, U+6574, U+6587, U+6599, U+659C, U+65AD, U+65B0,
+         U+65B9, U+65E0, U+65E2, U+65E5-65E7, U+65E9, U+65F6, U+660E, U+6613, U+6620, U+662F, U+663E,
+         U+666E-666F, U+667A, U+6682, U+66B4, U+66F4, U+66FF-6700, U+6708-6709, U+670B, U+670D, U+671B,
+         U+671F, U+672A-672C, U+672F, U+673A, U+6743, U+6750, U+675F, U+6761, U+6765, U+677F, U+6781,
+         U+6784, U+6790, U+679C, U+67B6, U+67D0, U+67D3, U+67E5, U+6805, U+6807, U+680F, U+6811, U+6821,
+         U+6837-6839, U+683C-683D, U+6846, U+6848, U+684C, U+6863, U+6865, U+68C0, U+68F5, U+695A, U+6982,
+         U+699C, U+69FD, U+6A21, U+6A2A, U+6B21, U+6B3E, U+6B62-6B65, U+6B7B, U+6BB5, U+6BCD, U+6BCF,
+         U+6BD2, U+6BD4, U+6BDB, U+6BEB, U+6C14, U+6C34, U+6C38, U+6C42, U+6C47, U+6C49, U+6C89, U+6CA1,
+         U+6CBB, U+6CBF, U+6CC4, U+6CD5, U+6CDB, U+6CE2, U+6CE8, U+6CEA, U+6D3B, U+6D41, U+6D4B, U+6D4F,
+         U+6D6E, U+6D88-6D89, U+6DE1, U+6DF1, U+6DF7, U+6DF9, U+6DFB, U+6E05, U+6E21, U+6E32, U+6E38,
+         U+6E90, U+6EA2, U+6EAF, U+6ED1, U+6EDA, U+6EE1, U+6EE4, U+6F02, U+6F0F, U+6F14, U+6FC0, U+7070,
+         U+70B9, U+70C1, U+7126, U+7136, U+7167, U+7247-7248, U+724C, U+7279, U+72B6, U+72EC, U+732E,
+         U+7387, U+73AF-73B0, U+73BB, U+73ED, U+7406, U+7483, U+7518, U+751F, U+7528, U+7530-7531, U+7535,
+         U+753B, U+754C, U+7559, U+7565, U+75C7, U+75D5, U+767B, U+767D-767E, U+7684, U+76CA, U+76D1,
+         U+76D6, U+76EE, U+76F4, U+76F8, U+770B, U+771F, U+773C, U+7740, U+77E5, U+77ED-77EE, U+7801,
+         U+7814, U+7834, U+7840, U+786C, U+786E, U+7891, U+793A, U+7981, U+79BB, U+79CD, U+79D2, U+79DF,
+         U+79F0, U+79FB, U+7A0B, U+7A0D, U+7A33, U+7A3F, U+7A76, U+7A7A, U+7A81, U+7A84, U+7A97, U+7ACB,
+         U+7AD9, U+7AEF, U+7B14, U+7B26, U+7B2C, U+7B49, U+7B54, U+7B56, U+7B5B, U+7B7E, U+7B80, U+7B97,
+         U+7BA1, U+7C7B, U+7CB9, U+7CBE, U+7CCA, U+7CDF, U+7CFB, U+7D20, U+7D22, U+7D27, U+7D2F,
+         U+7EA6-7EA7, U+7EAC, U+7EAF, U+7EB5, U+7EB9, U+7EBF, U+7EC3-7EC4, U+7EC6, U+7EC8, U+7ECF, U+7ED1,
+         U+7ED3, U+7ED5, U+7ED9, U+7EDC-7EDD, U+7EDF, U+7EE7, U+7EEA, U+7EED, U+7EF3-7EF4, U+7EFC, U+7F13,
+         U+7F16, U+7F1D, U+7F29, U+7F3A, U+7F51, U+7F6E, U+7F72, U+7FFB, U+8001, U+8003, U+8005, U+800C,
+         U+8017, U+8054, U+805A, U+80B2, U+80CC, U+80DC, U+80FD, U+8106, U+8111, U+811A, U+8131, U+8138,
+         U+8179, U+817F, U+81C0, U+81C2, U+81C6, U+81EA, U+81F3-81F4, U+8212, U+822A, U+8272, U+8282,
+         U+82E5, U+8303, U+8349, U+8350, U+83DC, U+843D, U+85CF, U+867D, U+8840, U+884C, U+8865, U+8868,
+         U+88AB, U+88C1-88C2, U+88C5, U+88F8-88F9, U+897F, U+8981, U+8986, U+89C1-89C2, U+89C4, U+89C6,
+         U+89C8-89C9, U+89D2, U+89E3, U+89E6, U+8B66, U+8BA1-8BA2, U+8BA4, U+8BA9, U+8BAD-8BAE, U+8BB0,
+         U+8BB8, U+8BBA, U+8BBE-8BBF, U+8BC1, U+8BC6, U+8BC9-8BCA, U+8BD1, U+8BD5, U+8BDD, U+8BE2,
+         U+8BE5-8BE6, U+8BED, U+8BEF, U+8BF1, U+8BF4, U+8BF7, U+8BFA-8BFB, U+8BFE, U+8C01, U+8C03, U+8C08,
+         U+8C0E, U+8C61, U+8D1F, U+8D21, U+8D23, U+8D25-8D26, U+8D34, U+8D44, U+8D4C, U+8D56, U+8D60,
+         U+8D70, U+8D77, U+8D85, U+8D8B, U+8DB3, U+8DC3, U+8DD1, U+8DDD, U+8DDF, U+8DE8, U+8DEF, U+8DF3,
+         U+8E22, U+8E29, U+8E72, U+8EAB, U+8F66, U+8F68, U+8F6C, U+8F6E-8F6F, U+8F7D, U+8F83, U+8F85,
+         U+8F91, U+8F93, U+8FB9, U+8FBE, U+8FC1, U+8FC7, U+8FD0-8FD1, U+8FD4, U+8FD8-8FD9, U+8FDB-8FDF,
+         U+8FF0, U+8FF7, U+8FF9, U+8FFD, U+9000-9002, U+9009, U+900F-9010, U+9012, U+9014, U+901A,
+         U+901F-9020, U+903B, U+904D, U+9053, U+9057, U+906E, U+9075, U+907F, U+90A3, U+90E8, U+90FD,
+         U+914D, U+9192, U+91CA, U+91CC-91CD, U+91CF, U+91D1, U+9274, U+9488-9489, U+949F, U+94A5, U+94AE,
+         U+94FA, U+94FE, U+9500-9501, U+9519-951A, U+952E, U+957F, U+95E8, U+95EA, U+95ED-95EE, U+95F4,
+         U+9605, U+9632, U+9636, U+963B, U+9645, U+9648, U+964D, U+9650, U+9662, U+9664, U+9669, U+9677,
+         U+968F-9690, U+9694, U+969C, U+96BE, U+96C6, U+96F6, U+9700, U+9732, U+9759, U+975E, U+9760,
+         U+9762, U+9875-9876, U+9879-987B, U+9884, U+9891, U+9898, U+989C-989D, U+98CE, U+9996, U+9A71,
+         U+9A8C, U+9AA4, U+9AA8, U+9AD8, U+9ED8, U+9F50, U+FF01, U+FF08-FF09, U+FF0C-FF0D, U+FF1A-FF1B,
+         U+FF1F;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-00A0.woff2) format('woff2');
+  unicode-range: U+A0-BF, U+2013-203A, U+2202-222B, U+2248, U+2260-2265, U+301C, U+4E07-5055, U+506C-508D,
+         U+50A3-50BB, U+50D6-5121, U+513F-51D6;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-51D7.woff2) format('woff2');
+  unicode-range: U+51D7-5267, U+527D-52DF, U+52F0-55E3;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-55E4.woff2) format('woff2');
+  unicode-range: U+55E4-570A, U+571C-586C, U+587E-58A9, U+58BC-59FF;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-5A00.woff2) format('woff2');
+  unicode-range: U+5A00-5A7F, U+5A9A-5AF1, U+5B09-5B17, U+5B32-5B40, U+5B51-5D82, U+5D99-5D9D, U+5DB7-5E62,
+         U+5E78-5E86;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-5E87.woff2) format('woff2');
+  unicode-range: U+5E87-612B, U+613F-6177, U+618B-61D4, U+61E6-62A5;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-62A6.woff2) format('woff2');
+  unicode-range: U+62A6-64E6, U+6500-6538, U+6549-6577, U+658B-65D7, U+65E8-66BE, U+66D9-66F3;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-66F4.woff2) format('woff2');
+  unicode-range: U+66F4-6942, U+6954-6AAC, U+6B20-6B5F;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-6B60.woff2) format('woff2');
+  unicode-range: U+6B60-6F47;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-6F48.woff2) format('woff2');
+  unicode-range: U+6F48-6FEF, U+7011-7023, U+7035-7039, U+704C-711A, U+712F-7131, U+7145-7206, U+721D-73B0;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-73B1.woff2) format('woff2');
+  unicode-range: U+73B1-73F2, U+7403-7441, U+7455-74A9, U+74BA, U+74D2-77E2;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-77E3.woff2) format('woff2');
+  unicode-range: U+77E3-7A23, U+7A37-7A57, U+7A70-7ABF, U+7AD6-7C0B;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-7C0C.woff2) format('woff2');
+  unicode-range: U+7C0C-7C4D, U+7C73-7CF8, U+7D0A, U+7D2B, U+7D6E-7D77, U+7DA6-7DAE, U+7E3B-7E47, U+7E82,
+         U+7E9B-8058, U+8069-81A7;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-81A8.woff2) format('woff2');
+  unicode-range: U+81A8-81CC, U+81E3-85A5;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-85A6.woff2) format('woff2');
+  unicode-range: U+85A6-85E9, U+85FB-8616, U+8627-863C, U+864D-8944, U+895E-8966, U+897B-8983, U+89C5-8A07,
+         U+8A3E-8A48, U+8A79-8A92;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-8A93.woff2) format('woff2');
+  unicode-range: U+8A93, U+8B07, U+8B26, U+8B6C, U+8BA0-8C98, U+8D1D-8EBA, U+8ECE, U+8F67-90B2;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-90B3.woff2) format('woff2');
+  unicode-range: U+90B3-9104, U+9119-91DC, U+928E, U+92AE, U+92C8, U+933E, U+936A, U+938F, U+93CA-93D6, U+943E,
+         U+946B, U+9485-9576, U+95E9-973E, U+9752-97B4, U+97E6-97F6, U+9877;
+}
+
+@font-face {
+  font-family: 'LemiHuiYuanTi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/lemi-cjk-9878.woff2) format('woff2');
+  unicode-range: U+9878-98A7, U+98D1-98E8, U+990D-9910, U+992E, U+9954-99A8, U+9A6C-9B54, U+9C7C-9CE2,
+         U+9E1F-9F51, U+9F7F-9FA0, U+FE10-FE19, U+FE35-FE42, U+FF02-FF0F, U+FF3B-FF3F, U+FF5B-FF5D;
+}
+/* ═══ 字体分片结束 ═══ */
+
+:root {
+  /* 告诉浏览器本页是浅色：决定**样式到达之前**的画布色、
+   * 滚动条与表单控件的 UA 配色。
+   * 不写的话画布恒为白色 —— 暗色主题下冷启动会先闪一帧白。 */
+  color-scheme: light;
+  --hue: 350;
+  --primary: oklch(0.58 0.17 var(--hue));
+  --primary-hover: oklch(0.5 0.18 var(--hue));
+  --bg: oklch(0.99 0 0);
+  --card-bg: oklch(1 0 0);
+  --text: oklch(0.27 0 0);
+  --muted: oklch(0.46 0.005 var(--hue));
+  --border: oklch(0.88 0.006 var(--hue));
+  --nav-h: 60px;
+  /* 刘海/圆角屏的安全区。桌面浏览器上 env() 全为 0，与不写完全一致。
+   * 配合 <meta name="viewport" ... viewport-fit=cover> 生效。 */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  /* 导航占掉的总高度（含刘海）—— 凡是"避开导航"的地方都该用它，
+   * 直接用 --nav-h 会让内容钻到刘海底下。 */
+  --nav-total: calc(var(--nav-h) + var(--safe-top));
+  --container: min(1360px, calc(97vw - var(--safe-left) - var(--safe-right)));
+  /* hero 氛围色。默认跟随主色 —— 设了 hero 图后由 `initHeroTint()`
+   * 采样图片平均色覆盖它，于是页面上方的氛围光会"接上"封面图，
+   * 这是 korikura 观感的关键一环。 */
+  --hero-tint: var(--primary);
+  /* 可选 hero 图片（公网站点用）。`none` = 不渲染，后台默认即为 none */
+  --hero-image: none;
+  /* hero 图上方的底色遮罩。默认**不透明**（= 现在的观感，后台零变化）；
+   * 设了 hero 图时改成半透明，如 `color-mix(in oklab, var(--bg) 92%, transparent)` */
+  --hero-veil: var(--bg);
+
+  /* 控制台补充令牌 */
+  --ok: oklch(0.62 0.14 150);
+  --warn: oklch(0.75 0.15 75);
+  --danger: oklch(0.58 0.19 25);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-card: 0 1px 3px oklch(0 0 0 / 6%), 0 6px 20px -8px oklch(0 0 0 / 10%);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-theme='dark'] {
+  /* 与 :root 同权重（0,1,0），靠**写在后面**生效 —— 不要上移这一段 */
+  color-scheme: dark;
+  --primary: oklch(0.83 0.11 var(--hue));
+  --primary-hover: oklch(0.89 0.1 var(--hue));
+  --bg: oklch(0.18 0 0);
+  --card-bg: oklch(0.24 0 0);
+  --text: oklch(0.94 0 0);
+  --muted: oklch(0.68 0 0);
+  --border: oklch(0.35 0 0);
+  --ok: oklch(0.72 0.14 150);
+  --warn: oklch(0.8 0.14 75);
+  --danger: oklch(0.7 0.17 25);
+  --shadow-card: 0 1px 3px oklch(0 0 0 / 30%), 0 6px 20px -8px oklch(0 0 0 / 45%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding-top: calc(var(--nav-total) + 8px);
+  /* 底部留出 home indicator 的位置，否则最后一排内容会被它压住 */
+  padding-bottom: var(--safe-bottom);
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  font-synthesis: weight style;
+  color: var(--text);
+  /* 背景走两层伪元素，见下方 —— 这里保持透明让它们透出来 */
+  background-color: transparent;
+  transition: color 0.35s;
+}

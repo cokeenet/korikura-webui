@@ -1,0 +1,57 @@
+---
+/**
+ * 快速跳转面板（毛玻璃浮层）。
+ *
+ * 博客用它搜文章；这里没有文章可搜，改为**跳转**：
+ * 输关键字筛页面，↑↓ 选择，回车直达，Ctrl/Cmd+K 开关。
+ * 视觉与手感（毛玻璃、从下浮起、遮罩淡入）与 korikura 一致。
+ *
+ * 行为在 lib/ui.ts 的 initSearchPanel —— 结构与那边保持同步。
+ */
+import type { JumpLink } from '../lib/ui';
+
+interface Props {
+  links: JumpLink[];
+}
+
+const { links } = Astro.props;
+---
+
+<div id="search-modal" class="search-modal" role="dialog" aria-modal="true" aria-label="快速跳转">
+  <div class="search-backdrop" data-close></div>
+  <div class="search-panel">
+    <div class="search-input-wrap">
+      <svg class="search-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="M20 20l-3.5-3.5"></path>
+      </svg>
+      <input
+        id="search-input"
+        class="search-input"
+        type="text"
+        placeholder="跳转到…（输入页面名，回车直达）"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <kbd style="font-family:var(--font-mono);font-size:0.7rem;color:var(--muted)">Esc</kbd>
+    </div>
+    <div id="search-results" class="search-results"></div>
+  </div>
+</div>
+
+<script>
+  import { onPageReady, initSearchPanel } from '../lib/ui';
+
+  // 链接清单由服务端渲染进 script[type=application/json]，客户端读出来用。
+  // 这样列表只维护一份（Astro 侧），不会前后端各写一遍。
+  onPageReady(() => {
+    const raw = document.getElementById('search-data')?.textContent || '[]';
+    try {
+      initSearchPanel(JSON.parse(raw));
+    } catch {
+      initSearchPanel([]);
+    }
+  });
+</script>
+
+<script type="application/json" id="search-data" set:html={JSON.stringify(links)} />

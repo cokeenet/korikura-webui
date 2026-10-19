@@ -1,0 +1,38 @@
+---
+/**
+ * 进度条：`▓▓▓░░░ 11/49 22%`。
+ *
+ * ⚠️ **与 `ProgressBar.tsx` 是同一套标记与类名**，改一个必须改另一个。
+ * `scripts/check-ui-parity.mjs` 做静态检查。
+ *
+ * 分母由调用方决定 —— 同一个「完成度」在不同口径下分母可能不同
+ * （如按班级 vs 按年级），界面不要出现不带口径的「完成了多少」。
+ */
+interface Props {
+  finish: number;
+  total: number;
+  /** 是否显示右侧的 `11/49 22%` 文字。默认显示 */
+  showText?: boolean;
+  /** 无障碍标签。默认「已完成 N / M」 */
+  label?: string;
+}
+
+const { finish, total, showText = true, label } = Astro.props;
+const pct = total > 0 ? Math.min(100, Math.round((finish / total) * 100)) : 0;
+const done = total > 0 && finish >= total;
+---
+
+<div class="progress">
+  <div
+    class="progress-track"
+    role="progressbar"
+    aria-valuenow={finish}
+    aria-valuemin={0}
+    aria-valuemax={total}
+    aria-label={label ?? `已完成 ${finish} / ${total}`}
+  >
+    <div class={`progress-fill${done ? ' is-done' : ''}`} style={`width:${pct}%`}>
+    </div>
+  </div>
+  {showText && <span class="progress-text">{finish}/{total} {pct}%</span>}
+</div>

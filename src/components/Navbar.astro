@@ -1,0 +1,202 @@
+---
+/**
+ * 顶部导航（滚动态浮动胶囊 + 毛玻璃 + 主题切换 + 快速跳转）。
+ *
+ * 所有项目特有的东西都通过 props 传入，组件本身不含业务。
+ *
+ * ## 依赖的 DOM 约定
+ *
+ * 客户端逻辑在 `korikura-webui/lib/ui.ts`，通过下列 id 关联：
+ *   #nav-burger     汉堡按钮（开合抽屉）
+ *   #nav-drawer     抽屉（details 元素）
+ *   #theme-toggle   主题按钮
+ *   #theme-toggle 内的 #icon-auto / #icon-light / #icon-dark  三态图标
+ *   #search-open    打开快速跳转面板
+ *
+ * 若要改结构，请同步改 ui.ts。
+ *
+ * ## 不带业务行为
+ *
+ * 登出按钮（#logout-btn）只有外观，**没有任何点击处理** ——
+ * 登出要走哪个接口是各项目自己的事。需要的话在页面里自己绑：
+ *
+ * ```js
+ * document.getElementById('logout-btn')?.addEventListener('click', ...)
+ * ```
+ */
+import SearchPanel from './SearchPanel.astro';
+import type { JumpLink } from '../lib/ui';
+
+interface Props {
+  /** 站点名（显示在 logo 右侧） */
+  siteName: string;
+  /** 导航链接 */
+  links: JumpLink[];
+  /** favicon 路径 */
+  favicon?: string;
+  /** 未登录时抽屉里「登录」指向哪里 */
+  loginHref?: string;
+  /** 是否已登录（false 时不渲染导航链接，避免点了被弹回登录页） */
+  loggedIn?: boolean;
+}
+
+const {
+  siteName,
+  links,
+  favicon = '/favicon.svg',
+  loginHref = '/login',
+  loggedIn = true,
+} = Astro.props;
+
+const current = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? current === '/' : current === href || current.startsWith(href + '/');
+---
+
+
+<nav class="nav-wrapper" data-nav="top" aria-label="主导航">
+  <div class="nav-card">
+    <button
+      id="nav-burger"
+      class="icon-btn nav-burger"
+      type="button"
+      aria-label="打开菜单"
+      aria-expanded="false"
+      aria-controls="nav-drawer"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M3 6h18M3 12h18M3 18h18" />
+      </svg>
+    </button>
+
+    <a href="/" class="logo">
+      <img src={favicon} alt="" class="logo-img" />
+      <span class="logo-text">{siteName}</span>
+    </a>
+
+    <div class="nav-links">
+      {
+        /* 未登录时不显示功能链接：否则点了会被弹回登录页，体验割裂 */
+        loggedIn &&
+          links.map((l) => (
+            <a
+              href={l.href}
+              class="nav-link"
+              data-link={l.href}
+              aria-current={isActive(l.href) ? 'page' : undefined}
+            >
+              <span class="nav-link-text">{l.label}</span>
+            </a>
+          ))
+      }
+    </div>
+
+    <div class="nav-actions">
+      {
+        loggedIn && (
+          <button id="logout-btn" class="icon-btn" type="button" title="登出" aria-label="登出">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M15 17l5-5-5-5M20 12H9M12 19H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6" />
+            </svg>
+          </button>
+        )
+      }
+      {
+        /* 未登录时**连搜索入口一起隐藏**：
+           搜索面板里装的就是整份功能链接清单（含那些点进去会被弹回登录页的页面），
+           只藏导航链接而不藏搜索，等于换个入口把页面列表全暴露出去。 */
+        loggedIn && (
+          <button
+            id="search-open"
+            class="icon-btn"
+            type="button"
+            title="快速跳转（Ctrl/Cmd + K）"
+            aria-label="快速跳转"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M20 20l-3.5-3.5"></path>
+            </svg>
+          </button>
+        )
+      }
+      <button id="theme-toggle" class="icon-btn" type="button" title="切换主题" aria-label="切换主题">
+        <!-- 内联 SVG：emoji 在部分环境渲染为空白，不能用 -->
+        <svg id="icon-auto" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none" />
+        </svg>
+        <svg id="icon-light" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+          <circle cx="12" cy="12" r="4.2" />
+          <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" />
+        </svg>
+        <svg id="icon-dark" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+          <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- 未登录时不渲染搜索面板：面板内容就是功能链接清单，
+     Ctrl+K 不该成为绕过导航隐藏的后门（initSearchPanel 没有 modal 时直接 return） -->
+{loggedIn && <SearchPanel links={links} />}
+
+<!--
+  移动端抽屉菜单（M16）。
+
+  为什么需要：手机上导航 9 项总宽 616px，而可视区只有 110px
+  （logo 148px + 两个圆形按钮 76px 就吃掉了大半），overflow-x:auto
+  虽有但用户根本不知道能滑 —— 实测只能看到第 1 项。
+
+  做法：桌面端完全不受影响（.nav-drawer 默认 display:none），
+  只在 ≤640px 时启用。用 details 元素承载，JS 失效也能开合。
+
+  注意：**注释里不能出现尖括号标签字面量**（如 details/summary 的标签形式）——
+  HTML 注释中的标签仍会被解析器处理，实测会撕裂 DOM 并让整块导航重复渲染。
+  这里一律只用元素名，不写标签形式。
+-->
+<details id="nav-drawer" class="nav-drawer">
+  <summary class="nav-drawer-handle" aria-label="菜单">
+    <span class="nav-drawer-handle-text">菜单</span>
+  </summary>
+  <div class="nav-drawer-panel">
+    {
+      loggedIn ? (
+        links.map((l) => (
+          <a
+            href={l.href}
+            class="nav-drawer-link"
+            aria-current={isActive(l.href) ? 'page' : undefined}
+          >
+            {l.label}
+          </a>
+        ))
+      ) : (
+        <a href={loginHref} class="nav-drawer-link">
+          登录
+        </a>
+      )
+    }
+  </div>
+</details>
+
+
+
+
+<script>
+  /**
+   * 导航的客户端行为全部来自包的 lib/ui.ts。
+   *
+   * 三个 init 都是**幂等**的：可以安全地在每次 astro:page-load 时重跑。
+   * 这是启用 ClientRouter 后的硬要求 —— 换页不会重新执行内联脚本，
+   * 不重跑就会出现"跳转一次后主题/滚动/抽屉全失效"。
+   */
+  import { onPageReady, initNavScroll, initDrawer, initTheme } from '../lib/ui';
+
+  onPageReady(() => {
+    initNavScroll();
+    initDrawer();
+    initTheme();
+  });
+</script>

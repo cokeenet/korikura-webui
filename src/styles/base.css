@@ -1,0 +1,98 @@
+/**
+ * 页面基底：背景两层伪元素 + body 排版 + 布局容器。
+ *
+ * 用固定定位的伪元素而不是 background-attachment:fixed ——
+ * 后者在移动端（尤其 iOS）有性能与兼容问题。
+ */
+/* ── 页面底色（画在 html 上，别只靠 body::before）────────
+ *
+ * 底色必须**同时**落在 `html` 上。原因在视图过渡：
+ * ClientRouter 的整页过渡是「旧快照淡出 + 新快照淡入」两层叠加
+ * （见 motion.css 的 ::view-transition-old/new(root)），
+ * 交叉点上两者不透明度之和 **小于 1**，底下会透出浏览器默认画布。
+ *
+ * `html` 没有背景时那层画布是**白色** —— 暗色主题下每次换页整页闪一下白，
+ * 浅色主题下白对白看不出来（所以这个 bug 只在暗色下暴露）。
+ * `body::before` 是 `z-index:-1` 的固定伪元素，它画在 html 底色**之上**，
+ * 所以这里补底色不会改变现有观感（`--hero-veil` 默认就等于 `--bg`）。
+ *
+ * 冷启动时它还是样式到达前的第一层底色；更早的那一帧由 Base.astro
+ * 内联设置的 `color-scheme` 兜住（见那边的注释）。
+ */
+html {
+  background-color: var(--bg);
+}
+
+/* ── 背景两层（上游 korikura-theme 的做法）──────────────
+ *
+ * 线上不是把渐变写在 body 的 background 上，而是两个固定定位的伪元素：
+ *
+ *   body::after   z-index:-2  可选的 hero 图片（我们没图，跳过）
+ *   body::before  z-index:-1  氛围光 + 底色
+ *
+ * 为什么这样更好：
+ *   1. 固定定位不随内容滚动（background-attachment:fixed 在移动端
+ *      有性能和兼容问题，iOS 上尤其明显）
+ *   2. 两个伪元素可以各自独立做主题切换与动画
+ *
+ * 关键数值取自线上：
+ *   radial-gradient(130% 55% at 50% -8%, var(--hero-tint), transparent 72%)
+ *   且支持 color-mix 时用 94% 不透明度的底色 —— 让底下的 hero 图能透出一点
+ */
+/* 可选的 hero 图片层（z-index:-2，在氛围光之下）。
+ *
+ * 不设 `--hero-image` 时是 `none`，什么也不画 —— 后台站点零开销、零变化。
+ * 公网站点设成 `url(...)` 即可，配合 `initHeroTint()` 采样出 `--hero-tint`，
+ * 氛围光会与该图同色系。
+ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image: var(--hero-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* 用 `--hero-tint`（默认 = 主色）。设了 hero 图后它会被图片平均色覆盖，
+   * 于是氛围光"接上"封面图；`--hero-veil` 控制图片透出多少。
+   * 强度对齐上游 korikura-theme（20% / 22%）—— 再淡就只剩一层纯色了。 */
+  background:
+    radial-gradient(130% 55% at 50% -8%, color-mix(in oklab, var(--hero-tint) 20%, transparent), transparent 72%),
+    var(--hero-veil);
+}
+
+[data-theme='dark'] body::before {
+  background:
+    radial-gradient(130% 55% at 50% -8%, color-mix(in oklab, var(--hero-tint) 22%, transparent), transparent 72%),
+    var(--hero-veil);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 布局容器。
+ *
+ * ⚠️ 必须放在 Tailwind 之后、且**权重足够**：
+ * Tailwind v4 自带一个 `.container` 工具类（max-width 40rem→...→1280px），
+ * 与我们的同名。实测它把容器压到 1280px，而导航胶囊是 1354px ——
+ * 于是导航比正文宽出一截，视觉上"错位"。
+ * 这里用 :where() 之外的选择器提高权重，并显式覆盖 max-width。
+ */
+main.container,
+.container {
+  width: var(--container);
+  max-width: var(--container);
+  margin-inline: auto;
+}

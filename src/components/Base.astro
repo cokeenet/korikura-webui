@@ -1,0 +1,137 @@
+---
+/**
+ * 基础布局：head / 主题初始化 / 视图过渡 / 导航 / 页脚。
+ *
+ * ## 为什么主题初始化必须内联在 head
+ *
+ * 若等 JS bundle 加载后再设 `data-theme`，深色模式用户会先看到一帧白屏
+ * （FOUC）。内联脚本在解析 head 时就执行，赶在首次绘制之前。
+ *
+ * ## 视图过渡
+ *
+ * 导航带 `view-transition-name: nav`，切页时**导航保持不动**、只有内容
+ * 淡入淡出 —— 这是 korikura 的手感。配套的 `::view-transition-old(nav)`
+ * 等规则在 nav.css 里关掉了导航自身的动画（否则它会跟着一起淡）。
+ *
+ * ⚠️ 启用视图过渡后，内联脚本**不会在换页时重新执行**。
+ * 所有客户端初始化都要用 `onPageReady`（见 lib/ui.ts）—— 否则会出现
+ * "跳转一次后主题/滚动/抽屉全部失效"。
+ */
+import { ClientRouter } from 'astro:transitions';
+import Navbar from './Navbar.astro';
+import Footer from './Footer.astro';
+import type { JumpLink } from '../lib/ui';
+
+interface Credit {
+  prefix?: string;
+  name: string;
+  href: string;
+}
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** 站点名，用于 <title> 后缀与页脚 */
+  siteName: string;
+  /** 导航链接 */
+  links?: JumpLink[];
+  /** 页脚致谢 */
+  credits?: Credit[];
+  favicon?: string;
+  /** 是否已登录（透传给 Navbar） */
+  loggedIn?: boolean;
+  /** 隐藏导航与页脚（登录页用） */
+  bare?: boolean;
+}
+
+const {
+  title,
+  description = '',
+  siteName,
+  links = [],
+  credits = [],
+  favicon = '/favicon.svg',
+  loggedIn = true,
+  bare = false,
+} = Astro.props;
+
+const fullTitle = title ? `${title} - ${siteName}` : siteName;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover：让页面铺到刘海/圆角下面，配合 theme.css 里的
+         `--safe-*` 把内容推回安全区。
+         没有它，`env(safe-area-inset-*)` 在所有设备上都返回 0，
+         整套安全区适配会**静默失效**（桌面浏览器上看不出区别，只有真机才有）。
+         桌面浏览器上 env() 全为 0，渲染与不带该参数时完全一致。 -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+    <ClientRouter />
+    <script is:inline>
+      // 主题：尽早设置 + **换页时抢修**。两件事都要做。
+      //
+      // ⚠️ 为什么还要 astro:after-swap（真实事故：暗色下每次换页闪白）：
+      // Astro 的 ClientRouter 换页时会**用新文档的 `<html>` 属性覆盖当前属性**
+      // （astro/dist/transitions/swap-functions.js 的 swapRootAttributes，
+      //  只豁免 data-astro-transition*）。而服务端渲染出的是
+      // `<html lang="zh-CN">` —— 上面**没有** data-theme（它是下面这几行
+      // 运行时加的）。于是每次软导航 data-theme 都被抹掉，页面退回默认
+      // 浅色：卡片变白、导航变白，直到 lib/ui.ts 的 initTheme 在 page-load
+      // 才改回来。观感就是「每次换页，组件由白变暗」。
+      // 浅色主题下白对白看不出来 —— 所以这个 bug 只在暗色下暴露。
+      //
+      // after-swap 在 DOM 交换之后、**视图过渡拍下"新快照"之前**触发
+      // （router.js: doSwap → triggerEvent('astro:after-swap')，仍在
+      // startViewTransition 的 update 回调里），所以在这里补，过渡拿到的
+      // 快照就是深色。
+      //
+      // 另外两件事：
+      //   1. `data-theme` —— 让样式表加载后的配色正确；
+      //   2. `color-scheme`（内联样式，不等 CSS）—— 决定浏览器**默认画布**
+      //      颜色，管住样式到达前那一帧，以及滚动条与表单控件的 UA 配色。
+      (() => {
+        const KEY = 'theme-mode';
+        const root = document.documentElement;
+
+        const apply = () => {
+          let mode = 'auto';
+          try {
+            mode = localStorage.getItem(KEY) || 'auto';
+          } catch {
+            /* 隐私模式下 localStorage 会抛，按 auto 处理 */
+          }
+          const dark =
+            mode === 'dark' ||
+            (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          root.setAttribute('data-theme', dark ? 'dark' : 'light');
+          root.style.colorScheme = dark ? 'dark' : 'light';
+        };
+
+        apply();
+        document.addEventListener('astro:after-swap', apply);
+      })();
+    </script>
+  </head>
+  <body>
+    {!bare && <Navbar siteName={siteName} links={links} favicon={favicon} loggedIn={loggedIn} />}
+    <main class="container">
+      <slot />
+    </main>
+    {
+      !bare && (
+        <Footer siteName={siteName} credits={credits}>
+          {/* 透传具名插槽：接入方放项目特有的页脚内容（如版本号） */}
+          <slot name="footer-extra" />
+        </Footer>
+      )
+    }
+  </body>
+</html>

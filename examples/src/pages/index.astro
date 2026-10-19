@@ -1,0 +1,77 @@
+---
+import Base from 'korikura-webui/components/Base.astro';
+import StatCard from 'korikura-webui/components/ui/StatCard.astro';
+import StatusBadge from 'korikura-webui/components/ui/StatusBadge.astro';
+import '../styles.css';
+
+const links = [
+  { href: '/', label: '首页' },
+  { href: '/about', label: '关于' },
+];
+---
+
+<Base
+  title="示例"
+  description="korikura-webui 最小示例"
+  siteName="korikura-webui 示例"
+  links={links}
+  credits={[{ prefix: '主题来源', name: 'korikura-theme', href: 'https://github.com/foxmoe/korikura-theme' }]}
+>
+  <h1 class="page-title">korikura-webui</h1>
+  <p class="page-desc">向下滚动看导航变成浮动胶囊；点右上角图标切主题（有涟漪）；Ctrl/Cmd+K 打开跳转面板。</p>
+
+  <div class="grid grid-3 mt-16">
+    <StatCard value="42" label="统计卡" tone="primary" />
+    <StatCard value="OK" label="带语义色" tone="ok" hint="hint 说明文字" />
+    <StatCard value="7" label="普通" />
+  </div>
+
+  <div class="card mt-16">
+    <div class="card-title">徽标与按钮</div>
+    <div class="row" style="gap:8px;flex-wrap:wrap">
+      <StatusBadge text="成功" tone="ok" />
+      <StatusBadge text="失败" tone="fail" />
+      <StatusBadge text="警告" tone="warn" />
+      <StatusBadge text="进行中" tone="run" />
+      <StatusBadge text="中性" />
+      <button class="btn btn-primary btn-sm">主按钮</button>
+      <button class="btn btn-sm">次按钮</button>
+    </div>
+  </div>
+
+  <div class="card mt-16">
+    <div class="card-title">表格</div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>列 A</th><th>列 B</th></tr></thead>
+        <tbody>
+          <tr><td>值 1</td><td><code class="mono">code</code></td></tr>
+          <tr><td>值 2</td><td><span class="muted">muted</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card mt-16">
+    <div class="card-title">表单</div>
+    <div class="field"><label for="a">输入框</label><input id="a" class="input" placeholder="占位符" /></div>
+    <div class="field"><label for="b">下拉</label><select id="b" class="input"><option>选项一</option><option>选项二</option></select></div>
+  </div>
+
+  <div class="code-block mt-16">
+    <span class="code-lang">bash</span>
+    <pre>pnpm add korikura-webui</pre>
+  </div>
+
+  <div style="height:80vh"></div>
+  <p class="muted">（这段空白用于测试滚动 —— 向上滚时导航会变成浮动胶囊）</p>
+</Base>
+
+<script>
+  import { initMotionBg, initReveal, initBackToTop } from 'korikura-webui/lib/ui';
+
+  // 动态几何图案背景（○ △ X □ 缓慢斜向平移）
+  initMotionBg();
+  initReveal();
+  initBackToTop();
+</script>
