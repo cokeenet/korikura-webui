@@ -1,0 +1,24 @@
+---
+/**
+ * 表单字段容器（Astro 版，与 `Field.tsx` 是孪生）。
+ *
+ * ⚠️ 标记与类名必须与 `.tsx` 完全一致（孪生规则）：
+ *    `.field` / `label` / `.small`，错误行 `role="alert"` + `--danger`。
+ */
+interface Props {
+  label: string;
+  hint?: string;
+  error?: string;
+  htmlFor?: string;
+}
+const { label, hint, error, htmlFor } = Astro.props;
+---
+<div class="field">
+  <label for={htmlFor}>{label}</label>
+  <slot />
+  {error ? (
+    <p class="small" style="margin:0;color:var(--danger)" role="alert">{error}</p>
+  ) : hint ? (
+    <p class="small" style="margin:0;color:var(--muted)">{hint}</p>
+  ) : null}
+</div>

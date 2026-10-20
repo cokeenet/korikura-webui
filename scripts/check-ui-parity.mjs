@@ -18,6 +18,13 @@
  * 2. **class 名集合**一致
  * 3. **字面量文案**一致（默认标题、提示语等）
  *
+ * ## 允许「只有单份」的条件
+ *
+ * 有些组件**天生不需要两份**：纯 props → 纯标记、不含 hook 的（图表、数据表），
+ * 或者只用于岛屿、SSR 侧没有对应用法的（如 `Toggle` 只在交互区用）。
+ * 这类组件必须进 `TSX_ONLY` 白名单并写明理由 —— **不声明的单份仍然报错**，
+ * 防止「忘了补 .astro」被当成刻意设计混过去。
+ *
  * 用法：`node scripts/check-ui-parity.mjs`（CI / 提交前跑）
  */
 import { readFileSync, readdirSync } from 'node:fs';
@@ -25,7 +32,14 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const dir = join(root, 'src/components/ui');
+const dirs = [join(root, 'src/components/ui'), join(root, 'src/forms')];
+
+/** 允许只有 `.tsx` 的组件（相对文件基名）。理由见文件头。 */
+const TSX_ONLY = new Set([
+  // Toggle 只在交互区（进程页信号切换）使用，SSR 侧没有对应用法；
+  // 且它是有状态的受控组件，`.astro` 版无法提供同样的交互。
+  'Toggle',
+]);
 
 /** 取出一个文件里的 class 名集合。
  *  `class="a b"` / `className={`a b-${t}`}` → {a, b} （占位符那截丢掉） */
@@ -63,25 +77,36 @@ function literals(src) {
   return out;
 }
 
-const files = readdirSync(dir);
-const bases = [...new Set(files.map((f) => f.replace(/\.(astro|tsx)$/, '')))];
-
 let failed = 0;
+/** 实际校验过的组件组数（跨目录累计，用于汇总行）。 */
+let pairCount = 0;
 const diff = (a, b) => [...a].filter((x) => !b.has(x));
 
-for (const base of bases) {
+for (const dir of dirs) {
+  const files = readdirSync(dir);
+  const bases = [...new Set(files.map((f) => f.replace(/\.(astro|tsx)$/, '')))];
+  if (bases.length === 0) continue;
+  console.log(`\n\x1b[2m[${dir.slice(root.length + 1)}]\x1b[0m`);
+
+  for (const base of bases) {
   const astro = join(dir, `${base}.astro`);
   const tsx = join(dir, `${base}.tsx`);
   const hasAstro = files.includes(`${base}.astro`);
   const hasTsx = files.includes(`${base}.tsx`);
 
-  if (hasAstro !== hasTsx) {
-    console.error(
-      `✗ ${base}: 只有 ${hasAstro ? '.astro' : '.tsx'} —— 孪生组件必须成对（SSR 与岛屿各要一份）`,
-    );
-    failed++;
-    continue;
-  }
+    if (hasAstro !== hasTsx) {
+      // 允许清单：纯标记 / 仅岛屿使用的组件可以只有 .tsx（必须显式声明）
+      if (!hasAstro && TSX_ONLY.has(base)) {
+        pairCount++;
+        console.log(`✓ ${base}: 单份 .tsx（白名单，理由见脚本头）`);
+        continue;
+      }
+      console.error(
+        `✗ ${base}: 只有 ${hasAstro ? '.astro' : '.tsx'} —— 孪生组件必须成对（SSR 与岛屿各要一份）`,
+      );
+      failed++;
+      continue;
+    }
 
   const a = readFileSync(astro, 'utf8');
   const t = readFileSync(tsx, 'utf8');
@@ -110,9 +135,11 @@ for (const base of bases) {
     console.error(problems.join('\n'));
     failed++;
   } else {
+    pairCount++;
     console.log(
       `✓ ${base}: ${ca.size} 个 class / ${la.size} 条文案，两份一致`,
     );
+  }
   }
 }
 
@@ -123,4 +150,4 @@ if (failed) {
   );
   process.exit(1);
 }
-console.log(`\n全部 ${bases.length} 组孪生组件一致。`);
+console.log(`\n全部 ${pairCount} 组孪生组件一致。`);

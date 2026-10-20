@@ -24,6 +24,9 @@
 @source '../components';
 
 @import './theme.css';
+/* 图表/数据表的语义令牌（系列色、网格线）。必须在 theme 之后，
+   因为它引用 --primary/--ok 等通用令牌。 */
+@import './tokens.css';
 @import './base.css';
 @import './nav.css';
 @import './components.css';

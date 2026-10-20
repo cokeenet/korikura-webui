@@ -1,5 +1,35 @@
 # 变更记录
 
+## 0.2.1 — 2026-10-21
+
+### 新增：`datatable` / `forms` / `tokens`
+
+| 导出 | 用途 |
+|---|---|
+| `korikura-webui/datatable` | `DataTable`：列定义 + 行数据 → 表（数字右对齐、空态、行操作插槽、可选排序） |
+| `korikura-webui/forms/Field` | 字段容器（`.astro` + `.tsx` 孪生）：标签/提示/错误行 |
+| `korikura-webui/forms/Toggle` | 二元开关（`role="switch"`），不用 Toggle 冒充单选 |
+| `styles/tokens` | 图表/表格语义令牌：`--chart-1..6`、`--chart-grid`、`--table-stripe` |
+
+`DataTable` 与图表同样是「纯 props → 标记」：不加 `client:*` 为静态表；
+加 `client:load` 才有表头排序。空态只表达「确实没有」——「取不到」请用 `ErrorState`。
+
+### 修复
+
+- **`.field` 补 `margin-bottom: 14px`**（BEST-PRACTICES §五 坑 6）。
+  两个接入方（cokee-neumooc / Cokee UAI）早已各自覆盖成同一个值，
+  所以对它们是 no-op；这里只是把「每个项目都要记得补」变成包内默认。
+  它们各自的覆盖可以后续清理（不影响视觉）。
+
+### 工具
+
+- `scripts/check-ui-parity.mjs`：
+  - 扫描范围从 `src/components/ui` 扩到 **`src/forms`**
+  - 新增 `TSX_ONLY` 白名单：纯标记/仅岛屿使用的组件可以只有 `.tsx`，
+    但**必须显式声明**，否则仍报错（防止「忘了补 .astro」混过去）
+
+---
+
 ## 0.2.0 — 2026-10-21
 
 ### 新增：`charts` 模块（零运行时依赖）

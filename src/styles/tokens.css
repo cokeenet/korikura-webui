@@ -1,0 +1,45 @@
+/**
+ * 图表/数据表的**语义令牌**。
+ *
+ * 背景：`theme.css` 已经有通用令牌（`--primary` / `--ok` / `--warn` /
+ * `--danger` / `--muted` / `--border` / `--radius-*`），图表与数据表直接用它们。
+ * 但「多序列图表」还需要**一组互不冲突、可被主题覆盖的系列色** ——
+ * 直接复用状态色会导致「第四条曲线和错误色一样」这种歧义。
+ *
+ * 所以这里补一层：
+ *
+ * | 令牌 | 用途 |
+ * |---|---|
+ * | `--chart-1..6` | 多序列图表的系列色（按顺序取用） |
+ * | `--chart-grid` | 网格线（比 `--border` 更淡） |
+ * | `--table-stripe` | 斑马纹（默认不用，留给需要长表时开） |
+ *
+ * **不在这里重定义通用令牌**（那是 theme.css 的职责，重复定义会漂移）。
+ */
+
+:root {
+  /* 系列色：前三个沿用主色/成功/警告，后三个用中性蓝紫，
+   * 保证同屏 6 条曲线时可区分，且不抢状态色（红）的语义。 */
+  --chart-1: var(--primary);
+  --chart-2: var(--ok);
+  --chart-3: var(--warn);
+  --chart-4: oklch(0.62 0.12 250);
+  --chart-5: oklch(0.62 0.13 300);
+  --chart-6: var(--muted);
+
+  /* 网格线比边框淡一档：图表里网格不应比数据更显眼 */
+  --chart-grid: color-mix(in oklab, var(--border) 60%, transparent);
+
+  /* 斑马纹（可选） */
+  --table-stripe: color-mix(in oklab, var(--muted) 4%, transparent);
+}
+
+[data-theme='dark'] {
+  /* 暗色下提高亮度，避免系列色在深底上发闷 */
+  --chart-1: var(--primary);
+  --chart-2: oklch(0.72 0.14 150);
+  --chart-3: oklch(0.8 0.14 75);
+  --chart-4: oklch(0.72 0.12 250);
+  --chart-5: oklch(0.72 0.13 300);
+  --chart-6: var(--muted);
+}

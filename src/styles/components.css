@@ -269,6 +269,11 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
+  /* 【2026-10-21】补下边距（BEST-PRACTICES §五 坑 6）：
+   * 原先没有 margin-bottom，两个字段会紧贴。两个接入方
+   * （cokee-neumooc / Cokee UAI）各自覆盖成 14px —— 这里取同一个值，
+   * 对它们是 no-op，只是把「每个项目都要记得补」变成包内默认。 */
+  margin-bottom: 14px;
 }
 
 .field label {
