@@ -11,6 +11,31 @@
 毛玻璃浮层、视图过渡、动效，以及一组 SSR / React 双版本的基础原语。
 没有运行时依赖，样式基于 Tailwind v4 与 CSS 变量，换主色只改一个变量。
 
+## 图表（v0.2.0 新增）
+
+纯 SVG、**零运行时依赖**、服务端可直接渲染。在 `.astro` 里不加 `client:*`
+就是静态 HTML（不发 JS）；需要交互时再当 React 岛屿用。
+
+```astro
+---
+import { Sparkline, AreaChart } from 'korikura-webui/charts';
+---
+<Sparkline values={[1, 3, 2, 5]} />
+<AreaChart
+  series={[{ name: 'CPU', points: [0.2, 0.5, null, 0.3], tone: 'primary' }]}
+  from={from} to={to} yFormat={(v) => `${Math.round(v * 100)}%`} zeroBased
+/>
+```
+
+要点：
+
+- `null` 表示「该时刻没采到数据」→ **断线**，不插值（插值会掩盖采集失败）。
+- 组件**只有 `.tsx`**：纯标记、无 hook，`.astro` 里静态渲染即可。
+  详见 [CHANGELOG](CHANGELOG.md#关于孪生规则重要)。
+- 单测：`pnpm test`（`node --test`，零依赖）。
+
+---
+
 ## 特性
 
 - **主题**：CSS 变量驱动，改 `--hue` 换主色；亮色 / 暗色 / 跟随系统三态，首屏不闪

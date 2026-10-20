@@ -1,6 +1,6 @@
 {
   "name": "korikura-webui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Astro + React 的通用 UI 框架：korikura 主题、滚动态导航、毛玻璃、视图过渡与通用组件",
   "type": "module",
   "license": "CC-BY-NC-4.0",
@@ -25,7 +25,9 @@
     "./styles.css": "./src/styles/index.css",
     "./styles/*": "./src/styles/*",
     "./components/*": "./src/components/*",
-    "./lib/*": "./src/lib/*"
+    "./lib/*": "./src/lib/*",
+    "./charts": "./src/charts/index.ts",
+    "./charts/*": "./src/charts/*"
   },
   "files": [
     "src"
@@ -33,7 +35,8 @@
   "scripts": {
     "example:dev": "pnpm --dir examples dev",
     "example:build": "node scripts/check-ui-parity.mjs && pnpm --dir examples build",
-    "check": "node scripts/check-ui-parity.mjs"
+    "check": "node scripts/check-ui-parity.mjs",
+    "test": "node --test src/charts/*.test.ts"
   },
   "peerDependencies": {
     "@astrojs/react": "^6.0.0",
